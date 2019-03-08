@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Develop by Jose L Crisostomo S. on 2/3/19 5:00 PM
+  ~ Last modified 2/3/19 5:00 PM.
+  ~ Copyright (c) 2019. All rights reserved.
+  ~
+  ~
+  -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_most_popular"
+        android:title="@string/most_popular"
+        android:orderInCategory="1"
+        app:showAsAction="collapseActionView"
+        />
+    <item
+        android:id="@+id/action_highest_rated"
+        android:title="@string/highest_rated"
+        android:orderInCategory="2"
+        app:showAsAction="collapseActionView"
+        />
+</menu>
