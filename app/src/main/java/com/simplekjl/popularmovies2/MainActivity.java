@@ -1,18 +1,17 @@
 package com.simplekjl.popularmovies2;
 
+import android.databinding.DataBindingUtil;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.simplekjl.popularmovies2.adapters.MoviesAdapter;
+import com.simplekjl.popularmovies2.databinding.ActivityMainBinding;
 import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.MoviesDBService;
 import com.simplekjl.popularmovies2.network.models.Movie;
@@ -29,29 +28,21 @@ public class MainActivity extends AppCompatActivity {
 
     public static String MOVIE_OBJECT = "movie";
     private static String TAG = MainActivity.class.getCanonicalName();
-    private ProgressBar mProgressBar;
-    private RecyclerView mRecyclerView;
     private MoviesAdapter mMoviesAdapter;
-    private TextView mErrorMessageTv;
     private List<Movie> mMovieList;
+
+    private ActivityMainBinding mBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        bindViews();
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         if (mMovieList != null) {
             mMoviesAdapter = new MoviesAdapter(mMovieList);
             showResults();
         } else {
             getMostPopularMovies();
         }
-    }
-
-    private void bindViews() {
-        mProgressBar = findViewById(R.id.progressBar);
-        mRecyclerView = findViewById(R.id.rv_movies);
-        mErrorMessageTv = findViewById(R.id.error_message);
     }
 
     @Override
@@ -149,29 +140,29 @@ public class MainActivity extends AppCompatActivity {
 
 
     void showloader() {
-        mProgressBar.setVisibility(View.VISIBLE);
-        mRecyclerView.setVisibility(View.INVISIBLE);
-        mErrorMessageTv.setVisibility(View.INVISIBLE);
+        mBinding.progressBar.setVisibility(View.VISIBLE);
+        mBinding.rvMovies.setVisibility(View.INVISIBLE);
+        mBinding.errorMessage.setVisibility(View.INVISIBLE);
     }
 
     //region ShowResults
     void showResults() {
-        mProgressBar.setVisibility(View.INVISIBLE);
-        mRecyclerView.setVisibility(View.VISIBLE);
-        mErrorMessageTv.setVisibility(View.INVISIBLE);
+        mBinding.progressBar.setVisibility(View.INVISIBLE);
+        mBinding.rvMovies.setVisibility(View.VISIBLE);
+        mBinding.errorMessage.setVisibility(View.INVISIBLE);
         //setup recyclerView
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setAdapter(mMoviesAdapter);
+        mBinding.rvMovies.setLayoutManager(layoutManager);
+        mBinding.rvMovies.setAdapter(mMoviesAdapter);
 
     }
     //endRegion showresults
 
     //region Error Message
     void showErrorMessage() {
-        mProgressBar.setVisibility(View.INVISIBLE);
-        mRecyclerView.setVisibility(View.INVISIBLE);
-        mErrorMessageTv.setVisibility(View.VISIBLE);
+        mBinding.progressBar.setVisibility(View.INVISIBLE);
+        mBinding.rvMovies.setVisibility(View.INVISIBLE);
+        mBinding.errorMessage.setVisibility(View.VISIBLE);
     }
     //endRegion error message
 }

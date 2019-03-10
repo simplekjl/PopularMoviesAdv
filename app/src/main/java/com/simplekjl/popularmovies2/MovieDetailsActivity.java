@@ -1,35 +1,31 @@
 package com.simplekjl.popularmovies2;
 
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.RatingBar;
-import android.widget.TextView;
 
+import com.simplekjl.popularmovies2.database.AppDatabase;
+import com.simplekjl.popularmovies2.databinding.ActivityMovieDetailsBinding;
 import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.models.Movie;
 import com.squareup.picasso.Picasso;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
-
-    private TextView mTitle;
-    private TextView mReleaseDate;
-    private ImageView mImageView;
-    private RatingBar mRatingBar;
-    private TextView mRating;
-    private TextView mSynopsis;
+    ActivityMovieDetailsBinding mBinding;
     private Movie mMovie;
+    //database instance
+    private AppDatabase mDb;
+    private boolean isChecked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
-        bindViews();
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
+
+        mDb = AppDatabase.getInstance(this);
         if (mMovie != null) {
             setItem(mMovie);
         } else {
@@ -42,10 +38,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     void setItem(final Movie movie) {
         setTitle(movie.getTitle());
-        mTitle.setText(movie.getTitle());
-        mReleaseDate.setText(movie.getReleaseDate());
-        mRatingBar.setRating(movie.getVotesAvg());
-        mRating.setText(String.valueOf(movie.getVotesAvg()));
+        mBinding.tvTitle.setText(movie.getTitle());
+        mBinding.tvReleaseDate.setText(movie.getReleaseDate());
+        mBinding.ratingBar.setRating(movie.getVotesAvg());
+        mBinding.tvRating.setText(String.valueOf(movie.getVotesAvg()));
         StringBuilder sb = new StringBuilder(150);
         if (movie.getPosterPath() != null) {
             sb = new StringBuilder(150);
@@ -55,22 +51,33 @@ public class MovieDetailsActivity extends AppCompatActivity {
             sb.append(MoviesDBClient.IMAGE_BASE_URL);
         }
 
-
         Picasso.get()
                 .load(sb.toString())
                 .placeholder(R.drawable.thumbnail)
                 .error(R.drawable.thumbnail)
-                .into(mImageView);
-        mSynopsis.setText(movie.getOverview());
+                .into(mBinding.ivPoster);
+
+        mBinding.tvSynopsis.setText(movie.getOverview());
+
+        mBinding.saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isMovieSaved()) {
+                    mBinding.saveBtn.setImageDrawable(ContextCompat.getDrawable(
+                            getApplicationContext(), android.R.drawable.btn_star_big_on));
+                    mDb.movieDao().insertMovie(movie);
+                } else {
+                    mBinding.saveBtn.setImageDrawable(ContextCompat.getDrawable(
+                            getApplicationContext(), android.R.drawable.btn_star_big_off));
+                    mDb.movieDao().deleteMovie(movie);
+
+                }
+            }
+        });
     }
 
-    private void bindViews() {
-        mTitle = findViewById(R.id.tv_title);
-        mReleaseDate = findViewById(R.id.tv_release_date);
-        mImageView = findViewById(R.id.iv_poster);
-        mRatingBar = findViewById(R.id.ratingBar);
-        mRating = findViewById(R.id.tv_rating);
-        mSynopsis = findViewById(R.id.tv_synopsis);
+    private boolean isMovieSaved() {
+        return isChecked = !isChecked;
     }
 
 
