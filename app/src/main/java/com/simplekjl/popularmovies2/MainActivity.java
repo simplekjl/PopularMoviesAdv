@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getTopRatedMovies() {
         MoviesDBService service = MoviesDBClient.getInstance().create(MoviesDBService.class);
-        Call<MoviesResponse> result = service.getHihestRatedMovies(getString(R.string.api_key));
+        Call<MoviesResponse> result = service.getHighestRatedMovies(getString(R.string.api_key));
         showloader();
         result.enqueue(new Callback<MoviesResponse>() {
             @Override
