@@ -2,7 +2,7 @@
     <string name="app_name">Movie Show</string>
     <string name="most_popular">Most Popular</string>
     <string name="highest_rated">Highest Rated</string>
-    <string name="api_key">TU_LLAVE</string>
+    <string name="api_key">_TU_KEY</string>
     <string name="error_message">Something went wrong when trying to get the latest movies, Please try again.</string>
     <string name="div10">10</string>
     <string name="title_label">Title:</string>

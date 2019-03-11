@@ -1,10 +1,13 @@
 package com.simplekjl.popularmovies2;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
@@ -19,7 +22,6 @@ import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.MoviesDBService;
 import com.simplekjl.popularmovies2.network.models.Movie;
 import com.simplekjl.popularmovies2.network.models.MoviesResponse;
-import com.simplekjl.popularmovies2.utils.AppExecutors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,18 +54,24 @@ public class MainActivity extends AppCompatActivity {
         } else {
             getMoviesFromDatabase();
         }
-
     }
 
+
     private void getMoviesFromDatabase() {
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+        final LiveData<List<Movie>> data = mDb.movieDao().loadSavedMovies();
+        data.observe(this, new Observer<List<Movie>>() {
             @Override
-            public void run() {
-                mMovieList = mDb.movieDao().loadSavedMovies();
-                mMoviesAdapter = new MoviesAdapter(mMovieList);
-                showResults();
+            public void onChanged(@Nullable List<Movie> movies) {
+                if (movies != null) {
+                    mMoviesAdapter = new MoviesAdapter(movies);
+                    showResults();
+                } else {
+                    showErrorMessage();
+                    Log.d(TAG,"Database is empty");
+                }
             }
         });
+
     }
 
 
@@ -111,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<MoviesResponse> call, Throwable t) {
                 showErrorMessage();
-                Log.e(TAG, "onFailure: " + t.getMessage());
+                Log.e(TAG, "TopRatedMovies Failed: " + t.getMessage());
             }
         });
     }
@@ -138,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<MoviesResponse> call, Throwable t) {
                 showErrorMessage();
-                Log.e(TAG, "onFailure: " + t.getMessage());
+                Log.e(TAG, "Popular movies Failed: " + t.getMessage());
             }
         });
     }

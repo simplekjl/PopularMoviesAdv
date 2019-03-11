@@ -1,5 +1,6 @@
 package com.simplekjl.popularmovies2.database;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -14,7 +15,7 @@ import java.util.List;
 public interface MovieDao {
 
     @Query("SELECT * FROM movie ORDER BY popularity")
-    List<Movie> loadSavedMovies();
+    LiveData<List<Movie>> loadSavedMovies();
 
     @Insert
     void insertMovie(Movie movie);
