@@ -10,4 +10,5 @@
     <string name="vote_average">Vote average:</string>
     <string name="synopsis">Synopsis:</string>
     <string name="show_more">Show more</string>
+    <string name="save_movie_btn">save movie button</string>
 </resources>
