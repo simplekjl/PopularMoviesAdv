@@ -63,6 +63,12 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
         return mMoviesDataSet.size();
     }
 
+    public void setMovies(List<Movie> loadSavedMovies) {
+        if (mMoviesDataSet == null){
+            mMoviesDataSet = loadSavedMovies;
+        }
+    }
+
     class MoviesAdapterViewHolder extends RecyclerView.ViewHolder {
 
         private TextView mTitle;

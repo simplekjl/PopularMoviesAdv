@@ -1,6 +1,8 @@
 package com.simplekjl.popularmovies2;
 
+import android.content.Context;
 import android.databinding.DataBindingUtil;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
@@ -11,11 +13,13 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.simplekjl.popularmovies2.adapters.MoviesAdapter;
+import com.simplekjl.popularmovies2.database.AppDatabase;
 import com.simplekjl.popularmovies2.databinding.ActivityMainBinding;
 import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.MoviesDBService;
 import com.simplekjl.popularmovies2.network.models.Movie;
 import com.simplekjl.popularmovies2.network.models.MoviesResponse;
+import com.simplekjl.popularmovies2.utils.AppExecutors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +37,35 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mBinding;
 
+    private AppDatabase mDb;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        mDb = AppDatabase.getInstance(getApplicationContext());
         if (mMovieList != null) {
             mMoviesAdapter = new MoviesAdapter(mMovieList);
             showResults();
-        } else {
+        } else if (isOnline()) {
             getMostPopularMovies();
+        } else {
+            getMoviesFromDatabase();
         }
+
     }
+
+    private void getMoviesFromDatabase() {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mMovieList = mDb.movieDao().loadSavedMovies();
+                mMoviesAdapter = new MoviesAdapter(mMovieList);
+                showResults();
+            }
+        });
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -70,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private void getTopRatedMovies() {
         MoviesDBService service = MoviesDBClient.getInstance().create(MoviesDBService.class);
         Call<MoviesResponse> result = service.getHighestRatedMovies(getString(R.string.api_key));
-        showloader();
+        showLoader();
         result.enqueue(new Callback<MoviesResponse>() {
             @Override
             public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
@@ -97,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
     private void getMostPopularMovies() {
         MoviesDBService service = MoviesDBClient.getInstance().create(MoviesDBService.class);
         Call<MoviesResponse> result = service.getMostPopularMovies(getString(R.string.api_key));
-        showloader();
+        showLoader();
         result.enqueue(new Callback<MoviesResponse>() {
             @Override
             public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
@@ -139,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    void showloader() {
+    void showLoader() {
         mBinding.progressBar.setVisibility(View.VISIBLE);
         mBinding.rvMovies.setVisibility(View.INVISIBLE);
         mBinding.errorMessage.setVisibility(View.INVISIBLE);
@@ -165,4 +187,12 @@ public class MainActivity extends AppCompatActivity {
         mBinding.errorMessage.setVisibility(View.VISIBLE);
     }
     //endRegion error message
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return cm.getActiveNetworkInfo() != null &&
+                cm.getActiveNetworkInfo().isConnectedOrConnecting();
+    }
 }

@@ -10,6 +10,7 @@ import com.simplekjl.popularmovies2.database.AppDatabase;
 import com.simplekjl.popularmovies2.databinding.ActivityMovieDetailsBinding;
 import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.models.Movie;
+import com.simplekjl.popularmovies2.utils.AppExecutors;
 import com.squareup.picasso.Picasso;
 
 public class MovieDetailsActivity extends AppCompatActivity {
@@ -65,11 +66,22 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 if (isMovieSaved()) {
                     mBinding.saveBtn.setImageDrawable(ContextCompat.getDrawable(
                             getApplicationContext(), android.R.drawable.btn_star_big_on));
-                    mDb.movieDao().insertMovie(movie);
+                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            mDb.movieDao().insertMovie(movie);
+                        }
+                    });
+
                 } else {
                     mBinding.saveBtn.setImageDrawable(ContextCompat.getDrawable(
                             getApplicationContext(), android.R.drawable.btn_star_big_off));
-                    mDb.movieDao().deleteMovie(movie);
+                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            mDb.movieDao().deleteMovie(movie);
+                        }
+                    });
 
                 }
             }
