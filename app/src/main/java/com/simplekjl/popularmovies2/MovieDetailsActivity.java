@@ -39,10 +39,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     void setItem(final Movie movie) {
         setTitle(movie.getTitle());
-        mBinding.tvTitle.setText(movie.getTitle());
-        mBinding.tvReleaseDate.setText(movie.getReleaseDate());
-        mBinding.ratingBar.setRating(movie.getVotesAvg());
-        mBinding.tvRating.setText(String.valueOf(movie.getVotesAvg()));
+        mBinding.movieInfo.tvTitle.setText(movie.getTitle());
+        mBinding.movieInfo.tvReleaseDate.setText(movie.getReleaseDate());
+        mBinding.movieInfo.ratingBar.setRating(movie.getVotesAvg());
+        mBinding.movieInfo.tvRating.setText(String.valueOf(movie.getVotesAvg()));
         StringBuilder sb = new StringBuilder(150);
         if (movie.getPosterPath() != null) {
             sb = new StringBuilder(150);
@@ -56,15 +56,15 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 .load(sb.toString())
                 .placeholder(R.drawable.thumbnail)
                 .error(R.drawable.thumbnail)
-                .into(mBinding.ivPoster);
+                .into(mBinding.cover.ivPoster);
 
-        mBinding.tvSynopsis.setText(movie.getOverview());
+        mBinding.movieInfo.tvSynopsis.setText(movie.getOverview());
 
-        mBinding.saveBtn.setOnClickListener(new View.OnClickListener() {
+        mBinding.cover.saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isMovieSaved()) {
-                    mBinding.saveBtn.setImageDrawable(ContextCompat.getDrawable(
+                    mBinding.cover.saveBtn.setImageDrawable(ContextCompat.getDrawable(
                             getApplicationContext(), android.R.drawable.btn_star_big_on));
                     AppExecutors.getInstance().diskIO().execute(new Runnable() {
                         @Override
@@ -74,7 +74,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     });
 
                 } else {
-                    mBinding.saveBtn.setImageDrawable(ContextCompat.getDrawable(
+                    mBinding.cover.saveBtn.setImageDrawable(ContextCompat.getDrawable(
                             getApplicationContext(), android.R.drawable.btn_star_big_off));
                     AppExecutors.getInstance().diskIO().execute(new Runnable() {
                         @Override
