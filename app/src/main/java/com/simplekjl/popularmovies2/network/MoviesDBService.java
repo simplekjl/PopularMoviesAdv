@@ -18,8 +18,8 @@ public interface MoviesDBService {
     Call<MoviesResponse> getMostPopularMovies(@Query("api_key") String apiKey);
 
     @GET("/movie/{id}/videos")
-    Call<VideosResponse> getPreviewVideosById(@Path("id") String user);
+    Call<VideosResponse> getPreviewVideosById(@Path("id") int movieId);
 
     @GET("/movie/{id}/reviews")
-    Call<ReviewsResponse> getReviewsById(@Path("id") String user);
+    Call<ReviewsResponse> getReviewsById(@Path("id") int movieId);
 }

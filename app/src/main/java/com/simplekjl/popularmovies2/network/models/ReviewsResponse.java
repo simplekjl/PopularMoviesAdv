@@ -53,4 +53,8 @@ public class ReviewsResponse implements Parcelable {
         dest.writeInt(total_pages);
         dest.writeInt(total_results);
     }
+
+    public List<Review> getReviews() {
+        return results;
+    }
 }

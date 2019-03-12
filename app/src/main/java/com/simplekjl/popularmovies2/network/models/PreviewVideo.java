@@ -59,4 +59,32 @@ public class PreviewVideo implements Parcelable {
         dest.writeInt(size);
         dest.writeString(type);
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getIso_639_1() {
+        return iso_639_1;
+    }
+
+    public String getIso_3166_1() {
+        return iso_3166_1;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public String getType() {
+        return type;
+    }
 }
