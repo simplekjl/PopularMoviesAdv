@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     showResults();
                 } else {
                     showErrorMessage();
-                    Log.d(TAG,"Database is empty");
+                    Log.d(TAG, "Database is empty");
                 }
             }
         });
@@ -92,10 +92,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_highest_rated:
                 getTopRatedMovies();
                 return true;
+            case R.id.favorites:
+                getMoviesFromDatabase();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
 
     private void getTopRatedMovies() {
         MoviesDBService service = MoviesDBClient.getInstance().create(MoviesDBService.class);
