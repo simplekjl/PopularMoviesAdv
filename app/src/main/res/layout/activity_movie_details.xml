@@ -42,15 +42,28 @@
 
             <include
                 android:id="@+id/trailerRv"
-                layout="@layout/trailers_view"
+                layout="@layout/recyclerview_layout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/margin_horizontal_top"
                 android:layout_marginBottom="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/movieInfo" />
+
+            <include android:id="@+id/reviews"
+                layout="@layout/recyclerview_layout"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/margin_horizontal_top"
+                android:layout_marginBottom="@dimen/margin_horizontal_bottom"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/trailerRv"/>
+
+
 
 
         </android.support.constraint.ConstraintLayout>

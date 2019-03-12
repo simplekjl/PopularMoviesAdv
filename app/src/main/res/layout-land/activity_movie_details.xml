@@ -43,7 +43,12 @@
 
                 <include
                     android:id="@+id/trailerRv"
-                    layout="@layout/trailers_view"
+                    layout="@layout/recyclerview_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <include
+                    android:id="@+id/reviews"
+                    layout="@layout/recyclerview_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
             </LinearLayout>

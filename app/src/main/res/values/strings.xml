@@ -9,7 +9,10 @@
     <string name="release_date">Release date:</string>
     <string name="vote_average">Vote average:</string>
     <string name="synopsis">Synopsis:</string>
-    <string name="show_more">Show more</string>
     <string name="save_movie_btn">save movie button</string>
     <string name="favorites">Favorites</string>
+    <string name="trailer_video">Trailer video</string>
+    <string name="quality">Quality:</string>
+    <string name="user_label">User:</string>
+    <integer name="swing_anim_time">750</integer>
 </resources>

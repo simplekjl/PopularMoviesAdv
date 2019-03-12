@@ -16,6 +16,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -33,6 +35,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
 
     private List<Movie> mMoviesDataSet;
     private Context mContext;
+
+    // Allows to remember the last item shown on screen
+    private int lastPosition = -1;
 
     public MoviesAdapter(List<Movie> data) {
         mMoviesDataSet = data;
@@ -56,6 +61,18 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
     public void onBindViewHolder(@NonNull MoviesAdapterViewHolder moviesAdapterViewHolder, int i) {
 
         moviesAdapterViewHolder.setItem(mMoviesDataSet.get(i));
+        // Here you apply the animation when the view is bound
+        setAnimation(moviesAdapterViewHolder.itemView, i);
+    }
+    private void setAnimation(View viewToAnimate, int position)
+    {
+        // If the bound view wasn't previously displayed on screen, it's animated
+        if (position > lastPosition)
+        {
+            Animation animation = AnimationUtils.loadAnimation(mContext, android.R.anim.slide_in_left);
+            viewToAnimate.startAnimation(animation);
+            lastPosition = position;
+        }
     }
 
     @Override
@@ -63,11 +80,6 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
         return mMoviesDataSet.size();
     }
 
-    public void setMovies(List<Movie> loadSavedMovies) {
-        if (mMoviesDataSet == null){
-            mMoviesDataSet = loadSavedMovies;
-        }
-    }
 
     class MoviesAdapterViewHolder extends RecyclerView.ViewHolder {
 
