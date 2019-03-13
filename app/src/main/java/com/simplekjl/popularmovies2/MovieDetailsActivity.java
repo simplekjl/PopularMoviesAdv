@@ -1,8 +1,11 @@
 package com.simplekjl.popularmovies2;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,10 +17,16 @@ import com.simplekjl.popularmovies2.adapters.ReviewsAdapter;
 import com.simplekjl.popularmovies2.adapters.TrailersAdapter;
 import com.simplekjl.popularmovies2.database.AppDatabase;
 import com.simplekjl.popularmovies2.databinding.ActivityMovieDetailsBinding;
+import com.simplekjl.popularmovies2.databinding.PreviewItemLayoutBinding;
 import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.MoviesDBService;
-import com.simplekjl.popularmovies2.network.models.*;
+import com.simplekjl.popularmovies2.network.models.Movie;
+import com.simplekjl.popularmovies2.network.models.PreviewVideo;
+import com.simplekjl.popularmovies2.network.models.PreviewsResponse;
+import com.simplekjl.popularmovies2.network.models.Review;
+import com.simplekjl.popularmovies2.network.models.ReviewsResponse;
 import com.simplekjl.popularmovies2.utils.AppExecutors;
+import com.simplekjl.popularmovies2.utils.OnItemClickListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -30,6 +39,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     private static final String TAG = MovieDetailsActivity.class.getName();
     ActivityMovieDetailsBinding mBinding;
+    //adapters
+    ReviewsAdapter mReviewsAdapter;
     private Movie mMovie;
     private List<PreviewVideo> mTrailers;
     private List<Review> mReviews;
@@ -37,15 +48,16 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private AppDatabase mDb;
     private boolean isChecked = false;
     private MoviesDBService service;
-    //adapters
-    ReviewsAdapter mReviewsAdapter;
     private TrailersAdapter mTrailerAdapter;
+    private OnItemClickListener mTrailerClickListener;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
         mDb = AppDatabase.getInstance(this);
+        context = this;
         if (service == null) {
             service = MoviesDBClient.getInstance().create(MoviesDBService.class);
         }
@@ -64,7 +76,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void getReviews(int movieId) {
-        Call<ReviewsResponse> result = service.getReviewsById(movieId,getString(R.string.api_key));
+        Call<ReviewsResponse> result = service.getReviewsById(movieId, getString(R.string.api_key));
         showReviewsLoader();
         result.enqueue(new Callback<ReviewsResponse>() {
             @Override
@@ -91,13 +103,13 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void getTrailers(int movieId) {
-        Call<PreviewsResponse> result = service.getPreviewVideosById(movieId,getString(R.string.api_key));
+        Call<PreviewsResponse> result = service.getPreviewVideosById(movieId, getString(R.string.api_key));
         showRelatedVideosLoader();
         result.enqueue(new Callback<PreviewsResponse>() {
             @Override
             public void onResponse(Call<PreviewsResponse> call, Response<PreviewsResponse> response) {
-                if(response.isSuccessful()){
-                    if (response.body()!=null && response.body().getResults()!= null){
+                if (response.isSuccessful()) {
+                    if (response.body() != null && response.body().getResults() != null) {
                         mTrailers = response.body().getResults();
                         showRelatedVideos(mTrailers);
                     }
@@ -107,12 +119,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<PreviewsResponse> call, Throwable t) {
                 showRelatedVideosErrorMessage();
-                Log.d(TAG,t.getMessage());
+                Log.d(TAG, t.getMessage());
             }
         });
 
     }
-
 
 
     void setItem(final Movie movie) {
@@ -188,7 +199,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         mBinding.reviews.progressBar.setVisibility(View.INVISIBLE);
         mBinding.reviews.standardRv.setVisibility(View.VISIBLE);
         mBinding.reviews.errorMessage.setVisibility(View.INVISIBLE);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mBinding.reviews.standardRv.setLayoutManager(linearLayoutManager);
         mReviewsAdapter = new ReviewsAdapter(reviews);
         mBinding.reviews.standardRv.setAdapter(mReviewsAdapter);
@@ -205,14 +216,21 @@ public class MovieDetailsActivity extends AppCompatActivity {
         mBinding.reviews.standardRv.setVisibility(View.INVISIBLE);
         mBinding.reviews.errorMessage.setVisibility(View.VISIBLE);
     }
+
     private void showRelatedVideos(List<PreviewVideo> mTrailers) {
         mBinding.trailerRv.title.setText(getString(R.string.trailers_title));
         mBinding.trailerRv.title.setVisibility(View.VISIBLE);
         mBinding.trailerRv.errorMessage.setVisibility(View.INVISIBLE);
         mBinding.trailerRv.progressBar.setVisibility(View.INVISIBLE);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mBinding.trailerRv.standardRv.setLayoutManager(linearLayoutManager);
-        mTrailerAdapter = new TrailersAdapter(mTrailers);
+        mTrailerClickListener = new OnItemClickListener() {
+            @Override
+            public void onItemClick(Object item) {
+                watchYoutubeVideo(context, ((PreviewVideo)item).getKey());
+            }
+        };
+        mTrailerAdapter = new TrailersAdapter(mTrailers,mTrailerClickListener);
         mBinding.trailerRv.standardRv.setAdapter(mTrailerAdapter);
     }
 
@@ -240,5 +258,17 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
         super.onSaveInstanceState(outState);
 
+    }
+    public static void watchYoutubeVideo(Context context, String id){
+        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
+        Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://www.youtube.com/watch?v=" + id));
+        try {
+            Log.d(TAG,"Trying to open app");
+            context.startActivity(appIntent);
+        } catch (ActivityNotFoundException ex) {
+            Log.d(TAG,"Opening video in browser");
+            context.startActivity(webIntent);
+        }
     }
 }

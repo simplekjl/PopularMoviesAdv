@@ -18,5 +18,6 @@
     <string name="review_title">Reviews</string>
     <string name="trailers_title">Trailers</string>
     <string name="language">Language:</string>
+    <string name="see_more">See more</string>
     <integer name="swing_anim_time">750</integer>
 </resources>

@@ -4,10 +4,12 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.simplekjl.popularmovies2.databinding.PreviewItemLayoutBinding;
 import com.simplekjl.popularmovies2.network.models.PreviewVideo;
+import com.simplekjl.popularmovies2.utils.OnItemClickListener;
 
 import java.util.List;
 
@@ -15,9 +17,11 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
 
     private List<PreviewVideo> mList;
     private Context context;
+    private OnItemClickListener mClickListener;
 
-    public TrailersAdapter(List<PreviewVideo> mList) {
+    public TrailersAdapter(List<PreviewVideo> mList, OnItemClickListener listener) {
         this.mList = mList;
+        mClickListener = listener;
     }
 
     @NonNull
@@ -37,7 +41,7 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
 
     @Override
     public void onBindViewHolder(@NonNull TrailersAdapterViewHolder trailersAdapterViewHolder, int i) {
-        trailersAdapterViewHolder.setupItem(mList.get(i));
+        trailersAdapterViewHolder.setupItem(mList.get(i),mClickListener);
     }
 
     @Override
@@ -53,10 +57,16 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
             mBinding = previewItemBinding;
         }
 
-        public void setupItem(PreviewVideo previewVideo) {
+        public void setupItem(final PreviewVideo previewVideo, final OnItemClickListener mClickListener) {
             mBinding.trailerTitle.setText(previewVideo.getName());
             mBinding.language.setText(previewVideo.getIso_639_1());
             mBinding.quality.setText(String.valueOf(previewVideo.getSize()));
+            mBinding.cardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mClickListener.onItemClick(previewVideo);
+                }
+            });
         }
     }
 }

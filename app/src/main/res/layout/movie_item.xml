@@ -184,7 +184,7 @@
             tools:text="6.8/10" />
 
         <android.support.design.button.MaterialButton
-            android:id="@+id/showMore"
+            android:id="@+id/see_more"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

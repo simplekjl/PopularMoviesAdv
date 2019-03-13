@@ -135,7 +135,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
             mRatingBar = view.findViewById(R.id.ratingBar);
             mRating = view.findViewById(R.id.tv_rating);
             mSynopsis = view.findViewById(R.id.tv_synopsis);
-            mShowMoreButon = view.findViewById(R.id.showMore);
+            mShowMoreButon = view.findViewById(R.id.see_more);
         }
     }
 }
