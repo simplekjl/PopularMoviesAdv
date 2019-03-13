@@ -56,7 +56,7 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
         public void setupItem(PreviewVideo previewVideo) {
             mBinding.trailerTitle.setText(previewVideo.getName());
             mBinding.language.setText(previewVideo.getIso_639_1());
-            mBinding.quality.setText(previewVideo.getSize());
+            mBinding.quality.setText(String.valueOf(previewVideo.getSize()));
         }
     }
 }

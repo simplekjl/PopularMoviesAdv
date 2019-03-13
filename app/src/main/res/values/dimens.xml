@@ -2,4 +2,5 @@
 <resources>
     <dimen name="margin_horizontal_bottom">16dp</dimen>
     <dimen name="margin_horizontal_top">16dp</dimen>
+    <dimen name="general_16dp_margin">16dp</dimen>
 </resources>

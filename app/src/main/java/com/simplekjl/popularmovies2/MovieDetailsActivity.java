@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import com.simplekjl.popularmovies2.adapters.ReviewsAdapter;
 import com.simplekjl.popularmovies2.adapters.TrailersAdapter;
@@ -17,10 +16,7 @@ import com.simplekjl.popularmovies2.database.AppDatabase;
 import com.simplekjl.popularmovies2.databinding.ActivityMovieDetailsBinding;
 import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.MoviesDBService;
-import com.simplekjl.popularmovies2.network.models.Movie;
-import com.simplekjl.popularmovies2.network.models.PreviewVideo;
-import com.simplekjl.popularmovies2.network.models.Review;
-import com.simplekjl.popularmovies2.network.models.ReviewsResponse;
+import com.simplekjl.popularmovies2.network.models.*;
 import com.simplekjl.popularmovies2.utils.AppExecutors;
 import com.squareup.picasso.Picasso;
 
@@ -42,15 +38,17 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private boolean isChecked = false;
     private MoviesDBService service;
     //adapters
-    private ReviewsAdapter mReviewsAdapter;
+    ReviewsAdapter mReviewsAdapter;
     private TrailersAdapter mTrailerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details);
-
         mDb = AppDatabase.getInstance(this);
+        if (service == null) {
+            service = MoviesDBClient.getInstance().create(MoviesDBService.class);
+        }
         if (mMovie != null) {
             setItem(mMovie);
         } else {
@@ -66,7 +64,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void getReviews(int movieId) {
-        Call<ReviewsResponse> result = service.getReviewsById(movieId);
+        Call<ReviewsResponse> result = service.getReviewsById(movieId,getString(R.string.api_key));
         showReviewsLoader();
         result.enqueue(new Callback<ReviewsResponse>() {
             @Override
@@ -75,7 +73,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     if (response.body() != null) {
                         ReviewsResponse reviewsResponse = response.body();
                         if (reviewsResponse.getReviews() != null) {
-                            showReviews(reviewsResponse.getReviews());
+                            mReviews = reviewsResponse.getReviews();
+                            showReviews(mReviews);
                         }
                     }
                 }
@@ -92,8 +91,29 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void getTrailers(int movieId) {
+        Call<PreviewsResponse> result = service.getPreviewVideosById(movieId,getString(R.string.api_key));
+        showRelatedVideosLoader();
+        result.enqueue(new Callback<PreviewsResponse>() {
+            @Override
+            public void onResponse(Call<PreviewsResponse> call, Response<PreviewsResponse> response) {
+                if(response.isSuccessful()){
+                    if (response.body()!=null && response.body().getResults()!= null){
+                        mTrailers = response.body().getResults();
+                        showRelatedVideos(mTrailers);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PreviewsResponse> call, Throwable t) {
+                showRelatedVideosErrorMessage();
+                Log.d(TAG,t.getMessage());
+            }
+        });
 
     }
+
+
 
     void setItem(final Movie movie) {
         setTitle(movie.getTitle());
@@ -156,7 +176,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         mBinding.reviews.errorMessage.setVisibility(View.INVISIBLE);
     }
 
-    //region Error message
     void showReviewsErrorMessage() {
         mBinding.reviews.progressBar.setVisibility(View.INVISIBLE);
         mBinding.reviews.standardRv.setVisibility(View.INVISIBLE);
@@ -164,6 +183,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     void showReviews(List<Review> reviews) {
+        mBinding.reviews.title.setText(getString(R.string.review_title));
+        mBinding.reviews.title.setVisibility(View.VISIBLE);
         mBinding.reviews.progressBar.setVisibility(View.INVISIBLE);
         mBinding.reviews.standardRv.setVisibility(View.VISIBLE);
         mBinding.reviews.errorMessage.setVisibility(View.INVISIBLE);
@@ -171,6 +192,28 @@ public class MovieDetailsActivity extends AppCompatActivity {
         mBinding.reviews.standardRv.setLayoutManager(linearLayoutManager);
         mReviewsAdapter = new ReviewsAdapter(reviews);
         mBinding.reviews.standardRv.setAdapter(mReviewsAdapter);
+    }
+
+    void showRelatedVideosLoader() {
+        mBinding.reviews.progressBar.setVisibility(View.VISIBLE);
+        mBinding.reviews.standardRv.setVisibility(View.INVISIBLE);
+        mBinding.reviews.errorMessage.setVisibility(View.INVISIBLE);
+    }
+
+    void showRelatedVideosErrorMessage() {
+        mBinding.reviews.progressBar.setVisibility(View.INVISIBLE);
+        mBinding.reviews.standardRv.setVisibility(View.INVISIBLE);
+        mBinding.reviews.errorMessage.setVisibility(View.VISIBLE);
+    }
+    private void showRelatedVideos(List<PreviewVideo> mTrailers) {
+        mBinding.trailerRv.title.setText(getString(R.string.trailers_title));
+        mBinding.trailerRv.title.setVisibility(View.VISIBLE);
+        mBinding.trailerRv.errorMessage.setVisibility(View.INVISIBLE);
+        mBinding.trailerRv.progressBar.setVisibility(View.INVISIBLE);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        mBinding.trailerRv.standardRv.setLayoutManager(linearLayoutManager);
+        mTrailerAdapter = new TrailersAdapter(mTrailers);
+        mBinding.trailerRv.standardRv.setAdapter(mTrailerAdapter);
     }
 
     public boolean isOnline() {
@@ -197,13 +240,5 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
         super.onSaveInstanceState(outState);
 
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (service == null) {
-            service = MoviesDBClient.getInstance().create(MoviesDBService.class);
-        }
     }
 }

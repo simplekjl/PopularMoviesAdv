@@ -48,9 +48,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
     public MoviesAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         mContext = viewGroup.getContext();
         int itemLayout = R.layout.movie_item;
-        boolean hastoBeAttachedRightAway = false;
+        boolean hasToBeAttachedRightAway = false;
         View view = LayoutInflater.from(mContext)
-                .inflate(itemLayout, viewGroup, hastoBeAttachedRightAway);
+                .inflate(itemLayout, viewGroup, hasToBeAttachedRightAway);
 
         MoviesAdapterViewHolder viewHolder = new MoviesAdapterViewHolder(view);
 

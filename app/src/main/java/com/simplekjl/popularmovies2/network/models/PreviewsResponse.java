@@ -7,27 +7,27 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class VideosResponse implements Parcelable {
+public class PreviewsResponse implements Parcelable {
 
     @SerializedName("id")
     private int movieId;
     @SerializedName("results")
     private List<PreviewVideo> results;
 
-    protected VideosResponse(Parcel in) {
+    protected PreviewsResponse(Parcel in) {
         movieId = in.readInt();
         results = in.createTypedArrayList(PreviewVideo.CREATOR);
     }
 
-    public static final Creator<VideosResponse> CREATOR = new Creator<VideosResponse>() {
+    public static final Creator<PreviewsResponse> CREATOR = new Creator<PreviewsResponse>() {
         @Override
-        public VideosResponse createFromParcel(Parcel in) {
-            return new VideosResponse(in);
+        public PreviewsResponse createFromParcel(Parcel in) {
+            return new PreviewsResponse(in);
         }
 
         @Override
-        public VideosResponse[] newArray(int size) {
-            return new VideosResponse[size];
+        public PreviewsResponse[] newArray(int size) {
+            return new PreviewsResponse[size];
         }
     };
 
@@ -40,5 +40,13 @@ public class VideosResponse implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(movieId);
         dest.writeTypedList(results);
+    }
+
+    public int getMovieId() {
+        return movieId;
+    }
+
+    public List<PreviewVideo> getResults() {
+        return results;
     }
 }
