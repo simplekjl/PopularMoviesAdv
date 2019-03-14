@@ -9,6 +9,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        buildConfigField 'String', "ApiKey", THE_MOVIES_DB_API_KEY
+        resValue 'string', "api_key", THE_MOVIES_DB_API_KEY
     }
     buildTypes {
         release {
