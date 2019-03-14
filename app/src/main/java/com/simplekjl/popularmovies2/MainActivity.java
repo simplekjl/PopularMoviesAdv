@@ -3,6 +3,7 @@ package com.simplekjl.popularmovies2;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -194,11 +195,12 @@ public class MainActivity extends AppCompatActivity {
     //endRegion showresults
 
     int numberOfColums() {
-        if (getResources().getConfiguration().isLayoutSizeAtLeast(1)
-                || getResources().getConfiguration().isLayoutSizeAtLeast(2)) {
+        Configuration configuration = getResources().getConfiguration();
+        if (configuration.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_SMALL)
+                || getResources().getConfiguration().isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_NORMAL)) {
             return 1;
-        } else if (getResources().getConfiguration().isLayoutSizeAtLeast(3) ||
-                getResources().getConfiguration().isLayoutSizeAtLeast(4)) {
+        } else if (configuration.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_LARGE) ||
+                configuration.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_XLARGE)) {
             return 2;
         } else {
             //default value

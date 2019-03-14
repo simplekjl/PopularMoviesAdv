@@ -49,6 +49,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private boolean isChecked = false;
     private MoviesDBService service;
     private Context context;
+    private float ERROR_MESSAGE_SIZE = 12;
 
     public static void watchYoutubeVideo(Context context, String id) {
         Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
@@ -243,7 +244,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             mBinding.reviews.standardRv.setVisibility(View.INVISIBLE);
             mBinding.reviews.progressBar.setVisibility(View.INVISIBLE);
             mBinding.reviews.errorMessage.setText(getString(R.string.no_reviews_found));
-            mBinding.reviews.errorMessage.setTextSize(12);
+            mBinding.reviews.errorMessage.setTextSize(ERROR_MESSAGE_SIZE);
 
         }
     }
@@ -281,7 +282,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             mBinding.trailerRv.errorMessage.setVisibility(View.VISIBLE);
             mBinding.trailerRv.standardRv.setVisibility(View.INVISIBLE);
             mBinding.trailerRv.errorMessage.setText(getString(R.string.no_related_videos_found));
-            mBinding.trailerRv.errorMessage.setTextSize(12);
+            mBinding.trailerRv.errorMessage.setTextSize(ERROR_MESSAGE_SIZE);
         }
     }
 
