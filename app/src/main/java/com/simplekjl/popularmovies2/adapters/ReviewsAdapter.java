@@ -26,9 +26,7 @@ public class ReviewsAdapter extends RecyclerView.Adapter<ReviewsAdapter.ReviewsA
         Context context = viewGroup.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         ReviewItemLayoutBinding mBinding = ReviewItemLayoutBinding.inflate(layoutInflater,viewGroup,false);
-        ReviewsAdapterViewHolder viewHolder = new ReviewsAdapterViewHolder(mBinding);
-
-        return viewHolder;
+        return new ReviewsAdapterViewHolder(mBinding);
     }
 
     @Override
@@ -41,15 +39,15 @@ public class ReviewsAdapter extends RecyclerView.Adapter<ReviewsAdapter.ReviewsA
         return mDataSet.size();
     }
 
-    public class ReviewsAdapterViewHolder extends RecyclerView.ViewHolder{
+    class ReviewsAdapterViewHolder extends RecyclerView.ViewHolder{
         private ReviewItemLayoutBinding reviewItemLayoutBinding;
 
-        public ReviewsAdapterViewHolder(@NonNull ReviewItemLayoutBinding bindView) {
+        ReviewsAdapterViewHolder(@NonNull ReviewItemLayoutBinding bindView) {
             super(bindView.getRoot());
             reviewItemLayoutBinding = bindView;
         }
 
-        public void setItem(Review review){
+        void setItem(Review review){
             reviewItemLayoutBinding.content.setText(review.getContent());
             reviewItemLayoutBinding.reviewAuthor.setText(review.getAuthor());
         }

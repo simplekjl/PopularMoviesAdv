@@ -186,25 +186,26 @@ public class MainActivity extends AppCompatActivity {
         mBinding.errorMessage.setVisibility(View.INVISIBLE);
         //setup recyclerView
         int columns = numberOfColums();
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,columns);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, columns);
         mBinding.rvMovies.setLayoutManager(gridLayoutManager);
         mBinding.rvMovies.setAdapter(mMoviesAdapter);
 
     }
     //endRegion showresults
 
-    int numberOfColums(){
-        if(getResources().getConfiguration().isLayoutSizeAtLeast(1)
-                ||getResources().getConfiguration().isLayoutSizeAtLeast(2)) {
-             return 1;
-        }else if (getResources().getConfiguration().isLayoutSizeAtLeast(3) ||
-                getResources().getConfiguration().isLayoutSizeAtLeast(4)){
+    int numberOfColums() {
+        if (getResources().getConfiguration().isLayoutSizeAtLeast(1)
+                || getResources().getConfiguration().isLayoutSizeAtLeast(2)) {
+            return 1;
+        } else if (getResources().getConfiguration().isLayoutSizeAtLeast(3) ||
+                getResources().getConfiguration().isLayoutSizeAtLeast(4)) {
             return 2;
-        }else{
+        } else {
             //default value
             return 1;
         }
     }
+
     //region Error Message
     void showErrorMessage() {
         mBinding.progressBar.setVisibility(View.INVISIBLE);

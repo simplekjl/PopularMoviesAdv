@@ -16,7 +16,6 @@ import java.util.List;
 public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailersAdapterViewHolder> {
 
     private List<PreviewVideo> mList;
-    private Context context;
     private OnItemClickListener mClickListener;
 
     public TrailersAdapter(List<PreviewVideo> mList, OnItemClickListener listener) {
@@ -27,16 +26,13 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
     @NonNull
     @Override
     public TrailersAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        context = viewGroup.getContext();
+        Context context = viewGroup.getContext();
         //We get rid of the use of the layout line with the bindings
         //int itemLayout = R.layout.preview_item_layout;
         boolean hasToBeAttachedRightAway = false;
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         PreviewItemLayoutBinding binding = PreviewItemLayoutBinding.inflate(layoutInflater, viewGroup, hasToBeAttachedRightAway);
-
-        TrailersAdapterViewHolder viewholder = new TrailersAdapterViewHolder(binding);
-
-        return viewholder;
+        return new TrailersAdapterViewHolder(binding);
     }
 
     @Override
@@ -49,15 +45,15 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
         return mList.size();
     }
 
-    public class TrailersAdapterViewHolder extends RecyclerView.ViewHolder {
+     class TrailersAdapterViewHolder extends RecyclerView.ViewHolder {
         private final PreviewItemLayoutBinding mBinding;
 
-        public TrailersAdapterViewHolder(@NonNull PreviewItemLayoutBinding previewItemBinding) {
+        TrailersAdapterViewHolder(@NonNull PreviewItemLayoutBinding previewItemBinding) {
             super(previewItemBinding.getRoot());
             mBinding = previewItemBinding;
         }
 
-        public void setupItem(final PreviewVideo previewVideo, final OnItemClickListener mClickListener) {
+         void setupItem(final PreviewVideo previewVideo, final OnItemClickListener mClickListener) {
             mBinding.trailerTitle.setText(previewVideo.getName());
             mBinding.language.setText(previewVideo.getIso_639_1());
             mBinding.quality.setText(String.valueOf(previewVideo.getSize()));

@@ -11,9 +11,9 @@
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="@dimen/general_16dp_margin"
+            android:layout_marginLeft="@dimen/general_16dp_margin"
+            android:layout_marginTop="@dimen/general_16dp_margin"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
             android:visibility="invisible"
             app:layout_constraintStart_toStartOf="parent"
@@ -37,21 +37,17 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/title" />
 
         <TextView
             android:id="@+id/error_message"
+            style="@style/wrapper_8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="8dp"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
+            android:layout_marginTop="16dp"
+            android:paddingLeft="@dimen/general_16dp_margin"
+            android:paddingRight="@dimen/general_16dp_margin"
             android:text="@string/error_message"
             android:textAlignment="center"
             android:textSize="24sp"
@@ -59,7 +55,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title"
             tools:text="This is an example"
             tools:visibility="visible" />
 

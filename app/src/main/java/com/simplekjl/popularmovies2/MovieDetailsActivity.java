@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.simplekjl.popularmovies2.adapters.ReviewsAdapter;
 import com.simplekjl.popularmovies2.adapters.TrailersAdapter;
@@ -171,9 +172,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
         mBinding.cover.saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isMovieSaved()) {
+                if (!isChecked) {
                     updateStarBtnView(true);
-
                     AppExecutors.getInstance().diskIO().execute(new Runnable() {
                         @Override
                         public void run() {
@@ -189,8 +189,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
                             mDb.movieDao().deleteMovie(movie);
                         }
                     });
-
+                    Toast.makeText(context, "You have removed " + movie.getOriginalTitle() +
+                            " from your favorites.", Toast.LENGTH_LONG).show();
+                    finish();
                 }
+                //changing the value
+                isMovieSaved();
             }
         });
     }
@@ -226,13 +230,22 @@ public class MovieDetailsActivity extends AppCompatActivity {
     void showReviews(List<Review> reviews) {
         mBinding.reviews.title.setText(getString(R.string.review_title));
         mBinding.reviews.title.setVisibility(View.VISIBLE);
-        mBinding.reviews.progressBar.setVisibility(View.INVISIBLE);
-        mBinding.reviews.standardRv.setVisibility(View.VISIBLE);
-        mBinding.reviews.errorMessage.setVisibility(View.INVISIBLE);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mBinding.reviews.standardRv.setLayoutManager(linearLayoutManager);
-        mReviewsAdapter = new ReviewsAdapter(reviews);
-        mBinding.reviews.standardRv.setAdapter(mReviewsAdapter);
+        if (reviews.size() > 0) {
+            mBinding.reviews.progressBar.setVisibility(View.INVISIBLE);
+            mBinding.reviews.standardRv.setVisibility(View.VISIBLE);
+            mBinding.reviews.errorMessage.setVisibility(View.INVISIBLE);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+            mBinding.reviews.standardRv.setLayoutManager(linearLayoutManager);
+            mReviewsAdapter = new ReviewsAdapter(reviews);
+            mBinding.reviews.standardRv.setAdapter(mReviewsAdapter);
+        } else {
+            mBinding.reviews.errorMessage.setVisibility(View.VISIBLE);
+            mBinding.reviews.standardRv.setVisibility(View.INVISIBLE);
+            mBinding.reviews.progressBar.setVisibility(View.INVISIBLE);
+            mBinding.reviews.errorMessage.setText(getString(R.string.no_reviews_found));
+            mBinding.reviews.errorMessage.setTextSize(12);
+
+        }
     }
 
     void showRelatedVideosLoader() {
@@ -250,18 +263,26 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void showRelatedVideos(List<PreviewVideo> mTrailers) {
         mBinding.trailerRv.title.setText(getString(R.string.trailers_title));
         mBinding.trailerRv.title.setVisibility(View.VISIBLE);
-        mBinding.trailerRv.errorMessage.setVisibility(View.INVISIBLE);
-        mBinding.trailerRv.progressBar.setVisibility(View.INVISIBLE);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mBinding.trailerRv.standardRv.setLayoutManager(linearLayoutManager);
-        OnItemClickListener mTrailerClickListener = new OnItemClickListener() {
-            @Override
-            public void onItemClick(Object item) {
-                watchYoutubeVideo(context, ((PreviewVideo) item).getKey());
-            }
-        };
-        TrailersAdapter mTrailerAdapter = new TrailersAdapter(mTrailers, mTrailerClickListener);
-        mBinding.trailerRv.standardRv.setAdapter(mTrailerAdapter);
+        if (mTrailers.size() > 0) {
+            mBinding.trailerRv.errorMessage.setVisibility(View.INVISIBLE);
+            mBinding.trailerRv.progressBar.setVisibility(View.INVISIBLE);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+            mBinding.trailerRv.standardRv.setLayoutManager(linearLayoutManager);
+            OnItemClickListener mTrailerClickListener = new OnItemClickListener() {
+                @Override
+                public void onItemClick(Object item) {
+                    watchYoutubeVideo(context, ((PreviewVideo) item).getKey());
+                }
+            };
+            TrailersAdapter mTrailerAdapter = new TrailersAdapter(mTrailers, mTrailerClickListener);
+            mBinding.trailerRv.standardRv.setAdapter(mTrailerAdapter);
+        } else {
+            mBinding.trailerRv.progressBar.setVisibility(View.INVISIBLE);
+            mBinding.trailerRv.errorMessage.setVisibility(View.VISIBLE);
+            mBinding.trailerRv.standardRv.setVisibility(View.INVISIBLE);
+            mBinding.trailerRv.errorMessage.setText(getString(R.string.no_reviews_found));
+            mBinding.trailerRv.errorMessage.setTextSize(12);
+        }
     }
 
     public boolean isOnline() {
