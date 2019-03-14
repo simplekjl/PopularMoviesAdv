@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.button.MaterialButton;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import com.simplekjl.popularmovies2.MainActivity;
 import com.simplekjl.popularmovies2.MovieDetailsActivity;
 import com.simplekjl.popularmovies2.R;
+import com.simplekjl.popularmovies2.databinding.MovieItemBinding;
 import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.models.Movie;
 import com.squareup.picasso.Picasso;
@@ -47,12 +49,10 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
     @Override
     public MoviesAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         mContext = viewGroup.getContext();
-        int itemLayout = R.layout.movie_item;
-        boolean hasToBeAttachedRightAway = false;
-        View view = LayoutInflater.from(mContext)
-                .inflate(itemLayout, viewGroup, hasToBeAttachedRightAway);
+        LayoutInflater inflater =  LayoutInflater.from(mContext);
+        MovieItemBinding mBinding = MovieItemBinding.inflate(inflater,viewGroup,false);
 
-        MoviesAdapterViewHolder viewHolder = new MoviesAdapterViewHolder(view);
+        MoviesAdapterViewHolder viewHolder = new MoviesAdapterViewHolder(mBinding);
 
         return viewHolder;
     }
@@ -83,25 +83,21 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
 
     class MoviesAdapterViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView mTitle;
-        private TextView mReleaseDate;
-        private ImageView mImageView;
-        private RatingBar mRatingBar;
-        private TextView mRating;
-        private TextView mSynopsis;
-        private MaterialButton mShowMoreButon;
-
-
-        MoviesAdapterViewHolder(@NonNull View itemView) {
-            super(itemView);
-            bindViews(itemView);
+        MovieItemBinding itemBinding;
+        MoviesAdapterViewHolder(@NonNull MovieItemBinding bindView) {
+            super(bindView.getRoot());
+            itemBinding = bindView;
         }
 
         void setItem(final Movie movie) {
-            mTitle.setText(movie.getTitle());
-            mReleaseDate.setText(movie.getReleaseDate());
-            mRatingBar.setRating(movie.getVotesAvg());
-            mRating.setText(String.valueOf(movie.getVotesAvg()));
+            itemBinding.cover.saveBtn.setVisibility(View.INVISIBLE);
+            itemBinding.movieInfo.tvTitle.setText(movie.getTitle());
+            itemBinding.movieInfo.tvReleaseDate.setText(movie.getReleaseDate());
+            itemBinding.movieInfo.ratingBar.setRating(movie.getVotesAvg());
+            itemBinding.movieInfo.tvRating.setText(String.valueOf(movie.getVotesAvg()));
+            itemBinding.movieInfo.tvSynopsis.setText(movie.getOverview());
+            itemBinding.movieInfo.tvSynopsis.setMaxLines(4);
+            itemBinding.movieInfo.tvSynopsis.setEllipsize(TextUtils.TruncateAt.END);
             StringBuilder sb = new StringBuilder(150);
             if (movie.getPosterPath() != null) {
                 sb = new StringBuilder(150);
@@ -111,7 +107,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
                 sb.append(MoviesDBClient.IMAGE_BASE_URL);
             }
 
-            mShowMoreButon.setOnClickListener(new View.OnClickListener() {
+            itemBinding.showMore.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(mContext, MovieDetailsActivity.class);
@@ -124,18 +120,8 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
                     .load(sb.toString())
                     .placeholder(R.drawable.thumbnail)
                     .error(R.drawable.thumbnail)
-                    .into(mImageView);
-            mSynopsis.setText(movie.getOverview());
-        }
+                    .into(itemBinding.cover.ivPoster);
 
-        private void bindViews(View view) {
-            mTitle = view.findViewById(R.id.tv_title);
-            mReleaseDate = view.findViewById(R.id.tv_release_date);
-            mImageView = view.findViewById(R.id.iv_poster);
-            mRatingBar = view.findViewById(R.id.ratingBar);
-            mRating = view.findViewById(R.id.tv_rating);
-            mSynopsis = view.findViewById(R.id.tv_synopsis);
-            mShowMoreButon = view.findViewById(R.id.see_more);
         }
     }
 }

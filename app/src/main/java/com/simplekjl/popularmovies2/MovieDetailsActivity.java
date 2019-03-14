@@ -17,7 +17,6 @@ import com.simplekjl.popularmovies2.adapters.ReviewsAdapter;
 import com.simplekjl.popularmovies2.adapters.TrailersAdapter;
 import com.simplekjl.popularmovies2.database.AppDatabase;
 import com.simplekjl.popularmovies2.databinding.ActivityMovieDetailsBinding;
-import com.simplekjl.popularmovies2.databinding.PreviewItemLayoutBinding;
 import com.simplekjl.popularmovies2.network.MoviesDBClient;
 import com.simplekjl.popularmovies2.network.MoviesDBService;
 import com.simplekjl.popularmovies2.network.models.Movie;
@@ -48,9 +47,20 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private AppDatabase mDb;
     private boolean isChecked = false;
     private MoviesDBService service;
-    private TrailersAdapter mTrailerAdapter;
-    private OnItemClickListener mTrailerClickListener;
     private Context context;
+
+    public static void watchYoutubeVideo(Context context, String id) {
+        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
+        Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://www.youtube.com/watch?v=" + id));
+        try {
+            Log.d(TAG, "Trying to open app");
+            context.startActivity(appIntent);
+        } catch (ActivityNotFoundException ex) {
+            Log.d(TAG, "Opening video in browser");
+            context.startActivity(webIntent);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,10 +83,20 @@ public class MovieDetailsActivity extends AppCompatActivity {
             getReviews(mMovie.getId());
             getTrailers(mMovie.getId());
         }
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Movie movie = mDb.movieDao().getMovieById(mMovie.getId());
+                if (movie != null) {
+                    updateStarBtnView(true);
+                    isChecked = true;
+                }
+            }
+        });
     }
 
     public void getReviews(int movieId) {
-        Call<ReviewsResponse> result = service.getReviewsById(movieId, getString(R.string.api_key));
+        Call<ReviewsResponse> result = service.getReviewsById(movieId, BuildConfig.ApiKey);
         showReviewsLoader();
         result.enqueue(new Callback<ReviewsResponse>() {
             @Override
@@ -103,7 +123,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void getTrailers(int movieId) {
-        Call<PreviewsResponse> result = service.getPreviewVideosById(movieId, getString(R.string.api_key));
+        Call<PreviewsResponse> result = service.getPreviewVideosById(movieId, BuildConfig.ApiKey);
         showRelatedVideosLoader();
         result.enqueue(new Callback<PreviewsResponse>() {
             @Override
@@ -124,7 +144,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         });
 
     }
-
 
     void setItem(final Movie movie) {
         setTitle(movie.getTitle());
@@ -153,8 +172,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (isMovieSaved()) {
-                    mBinding.cover.saveBtn.setImageDrawable(ContextCompat.getDrawable(
-                            getApplicationContext(), android.R.drawable.btn_star_big_on));
+                    updateStarBtnView(true);
+
                     AppExecutors.getInstance().diskIO().execute(new Runnable() {
                         @Override
                         public void run() {
@@ -163,8 +182,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     });
 
                 } else {
-                    mBinding.cover.saveBtn.setImageDrawable(ContextCompat.getDrawable(
-                            getApplicationContext(), android.R.drawable.btn_star_big_off));
+                    updateStarBtnView(false);
                     AppExecutors.getInstance().diskIO().execute(new Runnable() {
                         @Override
                         public void run() {
@@ -175,6 +193,18 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void updateStarBtnView(boolean flag) {
+        if (flag) {
+            mBinding.cover.saveBtn.setImageDrawable(ContextCompat.getDrawable(
+                    getApplicationContext(), android.R.drawable.btn_star_big_on));
+        } else {
+
+            mBinding.cover.saveBtn.setImageDrawable(ContextCompat.getDrawable(
+                    getApplicationContext(), android.R.drawable.btn_star_big_off));
+        }
+
     }
 
     private boolean isMovieSaved() {
@@ -224,13 +254,13 @@ public class MovieDetailsActivity extends AppCompatActivity {
         mBinding.trailerRv.progressBar.setVisibility(View.INVISIBLE);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mBinding.trailerRv.standardRv.setLayoutManager(linearLayoutManager);
-        mTrailerClickListener = new OnItemClickListener() {
+        OnItemClickListener mTrailerClickListener = new OnItemClickListener() {
             @Override
             public void onItemClick(Object item) {
-                watchYoutubeVideo(context, ((PreviewVideo)item).getKey());
+                watchYoutubeVideo(context, ((PreviewVideo) item).getKey());
             }
         };
-        mTrailerAdapter = new TrailersAdapter(mTrailers,mTrailerClickListener);
+        TrailersAdapter mTrailerAdapter = new TrailersAdapter(mTrailers, mTrailerClickListener);
         mBinding.trailerRv.standardRv.setAdapter(mTrailerAdapter);
     }
 
@@ -241,7 +271,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         return cm.getActiveNetworkInfo() != null &&
                 cm.getActiveNetworkInfo().isConnectedOrConnecting();
     }
-
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -258,17 +287,5 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
         super.onSaveInstanceState(outState);
 
-    }
-    public static void watchYoutubeVideo(Context context, String id){
-        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
-        Intent webIntent = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("http://www.youtube.com/watch?v=" + id));
-        try {
-            Log.d(TAG,"Trying to open app");
-            context.startActivity(appIntent);
-        } catch (ActivityNotFoundException ex) {
-            Log.d(TAG,"Opening video in browser");
-            context.startActivity(webIntent);
-        }
     }
 }

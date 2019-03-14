@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getTopRatedMovies() {
         MoviesDBService service = MoviesDBClient.getInstance().create(MoviesDBService.class);
-        Call<MoviesResponse> result = service.getHighestRatedMovies(getString(R.string.api_key));
+        Call<MoviesResponse> result = service.getHighestRatedMovies(BuildConfig.ApiKey);
         showLoader();
         result.enqueue(new Callback<MoviesResponse>() {
             @Override
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getMostPopularMovies() {
         MoviesDBService service = MoviesDBClient.getInstance().create(MoviesDBService.class);
-        Call<MoviesResponse> result = service.getMostPopularMovies(getString(R.string.api_key));
+        Call<MoviesResponse> result = service.getMostPopularMovies(BuildConfig.ApiKey);
         showLoader();
         result.enqueue(new Callback<MoviesResponse>() {
             @Override
@@ -185,13 +185,26 @@ public class MainActivity extends AppCompatActivity {
         mBinding.rvMovies.setVisibility(View.VISIBLE);
         mBinding.errorMessage.setVisibility(View.INVISIBLE);
         //setup recyclerView
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mBinding.rvMovies.setLayoutManager(layoutManager);
+        int columns = numberOfColums();
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,columns);
+        mBinding.rvMovies.setLayoutManager(gridLayoutManager);
         mBinding.rvMovies.setAdapter(mMoviesAdapter);
 
     }
     //endRegion showresults
 
+    int numberOfColums(){
+        if(getResources().getConfiguration().isLayoutSizeAtLeast(1)
+                ||getResources().getConfiguration().isLayoutSizeAtLeast(2)) {
+             return 1;
+        }else if (getResources().getConfiguration().isLayoutSizeAtLeast(3) ||
+                getResources().getConfiguration().isLayoutSizeAtLeast(4)){
+            return 2;
+        }else{
+            //default value
+            return 1;
+        }
+    }
     //region Error Message
     void showErrorMessage() {
         mBinding.progressBar.setVisibility(View.INVISIBLE);
