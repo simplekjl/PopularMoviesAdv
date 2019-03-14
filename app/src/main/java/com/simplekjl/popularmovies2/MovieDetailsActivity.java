@@ -280,7 +280,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             mBinding.trailerRv.progressBar.setVisibility(View.INVISIBLE);
             mBinding.trailerRv.errorMessage.setVisibility(View.VISIBLE);
             mBinding.trailerRv.standardRv.setVisibility(View.INVISIBLE);
-            mBinding.trailerRv.errorMessage.setText(getString(R.string.no_reviews_found));
+            mBinding.trailerRv.errorMessage.setText(getString(R.string.no_related_videos_found));
             mBinding.trailerRv.errorMessage.setTextSize(12);
         }
     }

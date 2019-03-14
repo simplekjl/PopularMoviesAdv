@@ -19,5 +19,6 @@
     <string name="language">Language:</string>
     <string name="see_more">See more</string>
     <string name="no_reviews_found">There are no reviews yet for this title</string>
+    <string name="no_related_videos_found">There are no related videos yet for this title</string>
     <integer name="swing_anim_time">750</integer>
 </resources>
