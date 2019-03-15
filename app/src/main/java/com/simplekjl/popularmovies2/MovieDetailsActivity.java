@@ -31,9 +31,11 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
@@ -98,53 +100,57 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void getReviews(int movieId) {
-        Call<ReviewsResponse> result = service.getReviewsById(movieId, BuildConfig.ApiKey);
+        Single<ReviewsResponse> result = service.getReviewsById(movieId, BuildConfig.ApiKey);
         showReviewsLoader();
-        result.enqueue(new Callback<ReviewsResponse>() {
-            @Override
-            public void onResponse(Call<ReviewsResponse> call, Response<ReviewsResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        ReviewsResponse reviewsResponse = response.body();
+        result.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<ReviewsResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        showReviewsLoader();
+                    }
+
+                    @Override
+                    public void onSuccess(ReviewsResponse reviewsResponse) {
                         if (reviewsResponse.getReviews() != null) {
                             mReviews = reviewsResponse.getReviews();
                             showReviews(mReviews);
                         }
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ReviewsResponse> call, Throwable t) {
-                showReviewsErrorMessage();
-                Log.d(TAG, t.getMessage());
-            }
-        });
-
-
+                    @Override
+                    public void onError(Throwable e) {
+                        showReviewsErrorMessage();
+                        Log.d(TAG, e.getMessage());
+                    }
+                });
     }
 
     public void getTrailers(int movieId) {
-        Call<PreviewsResponse> result = service.getPreviewVideosById(movieId, BuildConfig.ApiKey);
-        showRelatedVideosLoader();
-        result.enqueue(new Callback<PreviewsResponse>() {
-            @Override
-            public void onResponse(Call<PreviewsResponse> call, Response<PreviewsResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null && response.body().getResults() != null) {
-                        mTrailers = response.body().getResults();
-                        showRelatedVideos(mTrailers);
+        Single<PreviewsResponse> result = service.getPreviewVideosById(movieId, BuildConfig.ApiKey);
+        result.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<PreviewsResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                        showRelatedVideosLoader();
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<PreviewsResponse> call, Throwable t) {
-                showRelatedVideosErrorMessage();
-                Log.d(TAG, t.getMessage());
-            }
-        });
+                    @Override
+                    public void onSuccess(PreviewsResponse previewsResponse) {
+                        if (previewsResponse != null && previewsResponse.getResults() != null) {
+                            mTrailers = previewsResponse.getResults();
+                            showRelatedVideos(mTrailers);
+                        }
+                    }
 
+                    @Override
+                    public void onError(Throwable e) {
+                        showRelatedVideosErrorMessage();
+                        Log.d(TAG, e.getMessage());
+                    }
+                });
     }
 
     void setItem(final Movie movie) {

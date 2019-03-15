@@ -27,9 +27,11 @@ import com.simplekjl.popularmovies2.network.models.MoviesResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -104,56 +106,60 @@ public class MainActivity extends AppCompatActivity {
 
     private void getTopRatedMovies() {
         MoviesDBService service = MoviesDBClient.getInstance().create(MoviesDBService.class);
-        Call<MoviesResponse> result = service.getHighestRatedMovies(BuildConfig.ApiKey);
-        showLoader();
-        result.enqueue(new Callback<MoviesResponse>() {
-            @Override
-            public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        MoviesResponse moviesResponse = response.body();
+        Single<MoviesResponse> result = service.getHighestRatedMovies(BuildConfig.ApiKey);
+        result.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<MoviesResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        showLoader();
+                    }
+
+                    @Override
+                    public void onSuccess(MoviesResponse moviesResponse) {
                         if (moviesResponse.getMoviesList() != null) {
                             mMovieList = moviesResponse.getMoviesList();
                             mMoviesAdapter = new MoviesAdapter(mMovieList);
                             showResults();
                         }
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<MoviesResponse> call, Throwable t) {
-                showErrorMessage();
-                Log.e(TAG, "TopRatedMovies Failed: " + t.getMessage());
-            }
-        });
+                    @Override
+                    public void onError(Throwable e) {
+                        showErrorMessage();
+                        Log.e(TAG, "TopRatedMovies Failed: " + e.getMessage());
+                    }
+                });
+
     }
 
     private void getMostPopularMovies() {
         MoviesDBService service = MoviesDBClient.getInstance().create(MoviesDBService.class);
-        Call<MoviesResponse> result = service.getMostPopularMovies(BuildConfig.ApiKey);
-        showLoader();
-        result.enqueue(new Callback<MoviesResponse>() {
-            @Override
-            public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        MoviesResponse moviesResponse = response.body();
-                        if (moviesResponse.getMoviesList() != null) {
-                            mMoviesAdapter = new MoviesAdapter(moviesResponse.getMoviesList());
-                            showResults();
+        Single<MoviesResponse> result = service.getMostPopularMovies(BuildConfig.ApiKey);
+        result.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<MoviesResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        showLoader();
+                    }
+
+                    @Override
+                    public void onSuccess(MoviesResponse moviesResponse) {
+                        if (moviesResponse != null) {
+                            if (moviesResponse.getMoviesList() != null) {
+                                mMoviesAdapter = new MoviesAdapter(moviesResponse.getMoviesList());
+                                showResults();
+                            }
                         }
                     }
-                }
 
-            }
+                    @Override
+                    public void onError(Throwable e) {
+                        showErrorMessage();
+                        Log.e(TAG, "Popular movies Failed: " + e.getMessage());
+                    }
+                });
 
-            @Override
-            public void onFailure(Call<MoviesResponse> call, Throwable t) {
-                showErrorMessage();
-                Log.e(TAG, "Popular movies Failed: " + t.getMessage());
-            }
-        });
     }
 
     @Override
