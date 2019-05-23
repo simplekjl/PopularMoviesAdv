@@ -31,10 +31,14 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.observers.DisposableCompletableObserver;
 import io.reactivex.schedulers.Schedulers;
 
 public class MovieDetailsActivity extends AppCompatActivity {
@@ -52,6 +56,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private MoviesDBService service;
     private Context context;
     private float ERROR_MESSAGE_SIZE = 12;
+
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public static void watchYoutubeVideo(Context context, String id) {
         Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
@@ -83,20 +89,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 setItem(mMovie);
             }
         }
-        if (isOnline()) {
-            getReviews(mMovie.getId());
-            getTrailers(mMovie.getId());
-        }
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                Movie movie = mDb.movieDao().getMovieById(mMovie.getId());
-                if (movie != null) {
-                    updateStarBtnView(true);
-                    isChecked = true;
-                }
-            }
-        });
     }
 
     public void getReviews(int movieId) {
@@ -181,12 +173,24 @@ public class MovieDetailsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!isChecked) {
                     updateStarBtnView(true);
-                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                    compositeDisposable.add(Completable.fromAction(new Action() {
                         @Override
-                        public void run() {
+                        public void run() throws Exception {
                             mDb.movieDao().insertMovie(movie);
                         }
-                    });
+                    }).subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribeWith(new DisposableCompletableObserver() {
+                                @Override
+                                public void onComplete() {
+                                    Log.d(TAG, "onComplete: adding to fav");
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    Log.d(TAG, "onError: inserting to fav");
+                                }
+                            }));
 
                 } else {
                     updateStarBtnView(false);
@@ -202,6 +206,21 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 }
                 //changing the value
                 isMovieSaved();
+            }
+        });
+
+        if (isOnline()) {
+            getReviews(mMovie.getId());
+            getTrailers(mMovie.getId());
+        }
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Movie movie = mDb.movieDao().getMovieById(mMovie.getId());
+                if (movie != null) {
+                    updateStarBtnView(true);
+                    isChecked = true;
+                }
             }
         });
     }
@@ -315,5 +334,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
         super.onSaveInstanceState(outState);
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.clear();
     }
 }

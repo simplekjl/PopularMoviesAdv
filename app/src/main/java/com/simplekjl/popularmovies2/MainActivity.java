@@ -1,14 +1,11 @@
 package com.simplekjl.popularmovies2;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
@@ -27,10 +24,13 @@ import com.simplekjl.popularmovies2.network.models.MoviesResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding mBinding;
 
     private AppDatabase mDb;
+
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,19 +63,27 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void getMoviesFromDatabase() {
-        final LiveData<List<Movie>> data = mDb.movieDao().loadSavedMovies();
-        data.observe(this, new Observer<List<Movie>>() {
-            @Override
-            public void onChanged(@Nullable List<Movie> movies) {
-                if (movies != null) {
-                    mMoviesAdapter = new MoviesAdapter(movies);
-                    showResults();
-                } else {
-                    showErrorMessage();
-                    Log.d(TAG, "Database is empty");
-                }
-            }
-        });
+        final Flowable<List<Movie>> data = mDb.movieDao().loadSavedMovies();
+        compositeDisposable.add(data.subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<Movie>>() {
+                    @Override
+                    public void accept(List<Movie> movies) throws Exception {
+                        if (movies != null) {
+                            mMoviesAdapter = new MoviesAdapter(movies);
+                            showResults();
+                        } else {
+                            showErrorMessage();
+                            Log.d(TAG, "Database is empty");
+                        }
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        showErrorMessage();
+                        Log.d(TAG, "Database is empty");
+                    }
+                }));
 
     }
 
@@ -228,5 +238,11 @@ public class MainActivity extends AppCompatActivity {
 
         return cm.getActiveNetworkInfo() != null &&
                 cm.getActiveNetworkInfo().isConnectedOrConnecting();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.clear();
     }
 }
